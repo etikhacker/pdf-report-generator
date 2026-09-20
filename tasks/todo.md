@@ -1,0 +1,7 @@
+- [ ] Stage 0: health endpoint and setup
+- [ ] Stage 1: schema and safe seed
+- [ ] Stage 2: aggregation queries
+- [ ] Stage 3: PDF rendering and print CSS
+- [ ] Stage 4: report API and file serving
+- [ ] Stage 5: same-day idempotency and force
+- [ ] Stage 6: README, PDF screenshot, manual proof, final verification
