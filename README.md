@@ -1,8 +1,10 @@
 # PDF Report Generator
 
-Bu layihə **FlyRank Backend Track — Week 4 — Assignment A8** üçün hazırlanmış PDF report generator sistemidir.
+This project is a complete solution for the **FlyRank Backend Track — Week 4 — Assignment A8**.
 
-Layihənin əsas məqsədi database-də saxlanılan sifariş məlumatlarını avtomatik olaraq PDF hesabata çevirməkdir. Sistem aşağıdakı pipeline ilə işləyir:
+The goal is to build a backend reporting pipeline that turns database records into a real PDF report and makes that PDF available through an API link.
+
+The complete pipeline is:
 
 ```text
 SQLite database
@@ -13,57 +15,57 @@ HTML report template
       ↓
 Playwright + Chromium
       ↓
-PDF faylı
+PDF file
       ↓
-Diskdə saxlama
+Store the file on disk
       ↓
-FastAPI download linki
+Serve the file through an API link
 ```
 
-Başqa sözlə, istifadəçi `POST /reports` endpoint-inə request göndərir. Server database-dən məlumatları oxuyur, statistikaları hesablayır, HTML səhifə yaradır, həmin səhifəni PDF-ə çevirir, PDF-i diskdə saxlayır və istifadəçiyə fayl linki qaytarır.
+A client sends `POST /reports`. The server reads the order data, calculates the report statistics, builds an HTML document, renders it as a PDF, stores the PDF on disk, saves the report metadata, and returns a download link.
 
-## Tapşırığın məqsədi
+## Assignment objective
 
-Bu assignment aşağıdakı backend bacarıqlarını yoxlayır:
+This assignment demonstrates the following backend concepts:
 
-1. SQLite database ilə işləmək;
-2. `COUNT`, `SUM`, `GROUP BY`, `ORDER BY` və `LIMIT` ilə aggregation query-ləri yazmaq;
-3. SQL nəticələrindən HTML report yaratmaq;
-4. Headless browser vasitəsilə HTML-i PDF-ə çevirmək;
-5. Yaradılmış faylı diskdə saxlamaq;
-6. API vasitəsilə faylı link ilə təqdim etmək;
-7. Eyni request-in iki dəfə gəlməsi zamanı duplicate PDF yaranmasının qarşısını almaq;
-8. Layihəni GitHub-da sənədləşdirilmiş şəkildə yayımlamaq.
+1. Working with a SQLite database;
+2. Writing aggregation queries with `COUNT`, `SUM`, `GROUP BY`, `ORDER BY`, and `LIMIT`;
+3. Building an HTML report from SQL results;
+4. Converting HTML to PDF with a headless browser;
+5. Storing generated artifacts on disk;
+6. Serving files through an API endpoint;
+7. Preventing duplicate reports when the same request is repeated;
+8. Publishing a documented project to GitHub.
 
-Əsas prinsip budur:
+The main design rule is:
 
-> PDF bytes-larını JSON response-un içində daşımaq əvəzinə, PDF-i diskdə saxla və yalnız download linkini qaytar.
+> Store the PDF once and return its address. Do not put PDF bytes inside JSON responses.
 
-## İstifadə olunan texnologiyalar
+## Technology stack
 
-| Texnologiya | İstifadə məqsədi |
+| Technology | Purpose |
 |---|---|
-| Python 3.10+ | Əsas proqramlaşdırma dili |
-| FastAPI | REST API serveri |
-| SQLite | Kiçik database və report metadata-sı |
-| Playwright | Headless Chromium ilə PDF yaratmaq |
-| Uvicorn | FastAPI serverini işə salmaq |
-| Pytest | Avtomatlaşdırılmış testlər |
-| Git/GitHub | Version control və submission |
+| Python 3.10+ | Main programming language |
+| FastAPI | REST API framework |
+| SQLite | Database and report metadata storage |
+| Playwright | Headless Chromium PDF rendering |
+| Uvicorn | ASGI server |
+| Pytest | Automated tests |
+| Git/GitHub | Version control and submission |
 
-## Dataset seçimi
+## Dataset
 
-Assignment iki dataset seçimi verirdi. Bu layihədə **Option A — The Little Shop** seçilib.
+The assignment offered two dataset options. This implementation uses **Option A — The Little Shop**.
 
-`seed.py` scripti:
+`seed.py` creates:
 
-- 200 sifariş yaradır;
-- 6 fərqli məhsuldan istifadə edir;
-- sifariş məbləğlərini `$5` və `$200` arasında yaradır;
-- sifariş tarixlərini son 30 gün daxilində yaradır;
-- `seed.py` iki dəfə işlədilsə belə, məlumatların ikiqat olmasına imkan vermir.
+- 200 invented orders;
+- six different products;
+- order amounts between `$5` and `$200`;
+- order dates from the last 30 days;
+- a clean dataset every time the script is run.
 
-İstifadə olunan məhsullar:
+The products are:
 
 ```text
 Keyboard
@@ -74,96 +76,96 @@ Webcam
 Headset
 ```
 
-## Layihə strukturu
+## Project structure
 
 ```text
 pdf-report-generator/
-├── app.py                    # FastAPI server, SQL, HTML və PDF logic
-├── seed.py                   # 200 order yaradan seed scripti
-├── requirements.txt          # Python dependency-ləri
+├── app.py                    # FastAPI server, SQL, HTML, and PDF logic
+├── seed.py                   # Creates the 200-order dataset
+├── requirements.txt          # Python dependencies
 ├── pytest.ini                # Pytest configuration
-├── Makefile                  # Tez-tez istifadə olunan komandalar
-├── SPEC.md                   # Layihənin specification sənədi
-├── CHECKPOINTS.md            # Manual verification nəticələri
-├── README.md                 # Bu sənəd
+├── Makefile                  # Common development commands
+├── SPEC.md                   # Project specification
+├── CHECKPOINTS.md            # Manual verification results
+├── README.md                 # This documentation
 ├── tasks/
-│   ├── plan.md               # Implementasiya planı
-│   └── todo.md               # Mərhələ checklist-i
+│   ├── plan.md               # Implementation plan
+│   └── todo.md               # Stage checklist
 ├── scripts/
-│   ├── report_data.py        # Aggregation nəticəsini JSON çap edir
-│   └── render_report.py      # Test PDF yaradır
+│   ├── report_data.py        # Prints aggregation data as JSON
+│   └── render_report.py      # Creates a test PDF
 ├── tests/
-│   └── test_app.py           # Unit və API testləri
+│   └── test_app.py           # Unit and API tests
 ├── docs/
-│   └── pdf-page-1.png        # Generated PDF-in screenshot-ı
-├── reports/                  # Generated PDF-lər; Git-ə əlavə edilmir
-└── report.db                 # SQLite database; Git-ə əlavə edilmir
+│   └── pdf-page-1.png        # Screenshot of the generated PDF
+├── reports/                  # Generated PDFs; ignored by Git
+└── report.db                 # SQLite database; ignored by Git
 ```
 
-`report.db` və `reports/*.pdf` generated fayllardır. Onlar `.gitignore`-a əlavə olunub. GitHub-da source code və seed recipe saxlanılır, generated data və artifacts saxlanılmır.
+`report.db` and generated PDF files are local artifacts. They are listed in `.gitignore`, so the repository contains the source code and the seed recipe rather than generated data and browser output.
 
-## Quraşdırma
+## Installation
 
-### 1. Repository-ni clone et
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/etikhacker/pdf-report-generator.git
 cd pdf-report-generator
 ```
 
-### 2. Virtual environment yarat
+### 2. Create and activate a virtual environment
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-Windows istifadə edirsənsə:
+On Windows PowerShell:
 
 ```powershell
 .venv\Scripts\activate
 ```
 
-### 3. Dependency-ləri quraşdır
+### 3. Install Python dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Playwright Chromium browser-ini quraşdır
+### 4. Install the Playwright browser
 
 ```bash
 playwright install chromium
 ```
 
-Playwright PDF yaratmaq üçün real Chromium browser-dən istifadə edir. Bu addım edilməsə, report generation zamanı browser tapılmaya bilər.
+Playwright uses a real Chromium browser to print the HTML page as a PDF. This installation step is required before generating reports.
 
-## Database-i seed etmək
+## Seed the database
 
-Database və cədvəllər `app.py` daxilindəki `init_db()` funksiyası ilə avtomatik yaradılır. Order məlumatlarını yaratmaq üçün:
+The database and tables are created automatically by the `init_db()` function in `app.py`. Create the order dataset with:
 
 ```bash
 python seed.py
 ```
 
-Gözlənilən output:
+Expected output:
 
 ```text
 Seeded 200 orders into .../report.db
 ```
 
-Seed script təhlükəsiz şəkildə təkrar icra oluna bilər:
+The seed script is safe to run more than once:
 
 ```bash
 python seed.py
 python seed.py
 ```
 
-İkinci icradan sonra database-də 400 yox, yenə də 200 order olacaq. Bunun səbəbi scriptin əvvəlcə `orders` cədvəlindəki məlumatları silməsi, sonra yeni 200 sətir əlavə etməsidir.
+After the second run, the database still contains 200 orders rather than 400. The script first deletes the existing rows and then inserts a clean set of 200 orders.
 
 ## Database schema
 
-### `orders` cədvəli
+### `orders` table
 
 ```sql
 CREATE TABLE orders (
@@ -175,9 +177,9 @@ CREATE TABLE orders (
 );
 ```
 
-Bu cədvəldə report üçün lazım olan bütün əsas məlumatlar saxlanılır.
+This table contains the source data used by the report.
 
-### `reports` cədvəli
+### `reports` table
 
 ```sql
 CREATE TABLE reports (
@@ -187,13 +189,13 @@ CREATE TABLE reports (
 );
 ```
 
-Bu cədvəl yaradılmış PDF-lərin metadata-sını saxlayır. PDF-in özü database-də saxlanmır. Database-də yalnız onun path-i saxlanılır.
+This table stores metadata for generated reports. The PDF itself is not stored in SQLite. Only its path and creation time are stored in the database.
 
 ## SQL aggregation
 
-Report `get_report_data()` funksiyasından alınan məlumatlarla yaradılır. Bu funksiya bir neçə SQL query istifadə edir.
+The report is built from the result of `get_report_data()`. That function runs several SQL queries.
 
-### Ümumi sifariş sayı və gəlir
+### Total orders and total revenue
 
 ```sql
 SELECT COUNT(*) AS total_orders,
@@ -201,12 +203,12 @@ SELECT COUNT(*) AS total_orders,
 FROM orders;
 ```
 
-Bu query iki əsas nəticə qaytarır:
+This returns:
 
-- `total_orders`: bütün sifarişlərin sayı;
-- `total_revenue`: bütün sifarişlərin məbləğlərinin cəmi.
+- `total_orders`: the number of orders;
+- `total_revenue`: the sum of all order amounts.
 
-### Gəlirə görə ən yaxşı 5 məhsul
+### Top five products by revenue
 
 ```sql
 SELECT product,
@@ -218,14 +220,14 @@ ORDER BY revenue DESC
 LIMIT 5;
 ```
 
-Burada:
+In this query:
 
-- `GROUP BY product` eyni məhsulları qruplaşdırır;
-- `SUM(amount)` hər məhsul üzrə ümumi gəliri hesablayır;
-- `ORDER BY revenue DESC` ən yüksək gəliri yuxarıya çıxarır;
-- `LIMIT 5` yalnız ilk 5 məhsulu saxlayır.
+- `GROUP BY product` groups rows belonging to the same product;
+- `SUM(amount)` calculates revenue per product;
+- `ORDER BY revenue DESC` puts the highest revenue first;
+- `LIMIT 5` keeps only the top five products.
 
-### Son 7 gün üzrə sifariş sayı
+### Orders per day for the last seven days
 
 ```sql
 SELECT created_at,
@@ -236,9 +238,9 @@ GROUP BY created_at
 ORDER BY created_at;
 ```
 
-Bu query son 7 gündə hər tarix üzrə neçə order olduğunu hesablayır.
+This calculates the number of orders for each date in the last seven days.
 
-### PDF üçün bütün order-lar
+### All orders for the detail table
 
 ```sql
 SELECT id, customer, product, amount, created_at
@@ -246,33 +248,33 @@ FROM orders
 ORDER BY created_at DESC, id DESC;
 ```
 
-Bu query PDF-in aşağı hissəsində göstərilən uzun detail table üçün istifadə olunur.
+This query supplies the long detail table at the bottom of the PDF. The table is intentionally long so that the PDF page-break behavior can be tested.
 
-Aggregation nəticəsinə baxmaq üçün:
+Print the aggregation result as JSON with:
 
 ```bash
 python scripts/report_data.py
 ```
 
-və ya:
+or:
 
 ```bash
 make data
 ```
 
-## HTML-dən PDF yaratmaq
+## HTML-to-PDF rendering
 
-PDF birbaşa əl ilə çəkilmir. Əvvəlcə `build_html()` funksiyası report data əsasında HTML string yaradır. HTML-in içində bunlar var:
+The PDF is not drawn manually. First, `build_html()` creates an HTML document from the report data. The document contains:
 
-- report başlığı;
-- yaradılma tarixi;
-- total orders kartı;
-- total revenue kartı;
-- top products table-i;
-- son 7 gün table-i;
-- bütün order-lar table-i.
+- a report title;
+- the generation date;
+- a total orders card;
+- a total revenue card;
+- a top products table;
+- a seven-day orders table;
+- a full orders table.
 
-Sonra `render_pdf()` funksiyası Playwright browser açır:
+Then `render_pdf()` launches Playwright and prints the HTML page:
 
 ```python
 async with async_playwright() as playwright:
@@ -281,17 +283,17 @@ async with async_playwright() as playwright:
     await page.set_content(html)
     await page.pdf(
         path=str(path),
-        format='A4',
-        print_background=True
+        format="A4",
+        print_background=True,
     )
     await browser.close()
 ```
 
-PDF-lər `reports/` qovluğunda saxlanılır.
+Generated PDFs are stored in the `reports/` directory.
 
-### Page break problemi
+### Preventing broken table rows
 
-Uzun table-lərdə browser bir sətri iki səhifəyə bölə bilər. Bu assignment xüsusi olaraq həmin problemi həll etməyi tələb edir. Layihədə aşağıdakı print CSS istifadə olunur:
+Long tables can be split incorrectly by a browser. A row may be cut between two PDF pages, and a table header may disappear on the next page. The project uses print CSS to prevent this:
 
 ```css
 thead {
@@ -304,47 +306,47 @@ tr {
 }
 ```
 
-Nəticə:
+This ensures that:
 
-- table header növbəti səhifədə təkrar görünür;
-- table row ortadan bölünmür;
-- PDF daha oxunaqlı olur.
+- the table header is repeated on new pages;
+- table rows are not split across pages;
+- the generated report remains readable.
 
-Test PDF yaratmaq üçün:
+Create a test PDF with:
 
 ```bash
 python scripts/render_report.py
 ```
 
-və ya:
+or:
 
 ```bash
 make render
 ```
 
-## Serveri işə salmaq
+## Start the server
 
 ```bash
 uvicorn app:app --reload --port 8000
 ```
 
-Server bu ünvanda açılır:
+The API is available at:
 
 ```text
 http://localhost:8000
 ```
 
-FastAPI documentation üçün:
+Interactive FastAPI documentation is available at:
 
 ```text
 http://localhost:8000/docs
 ```
 
-## API endpoint-ləri
+## API endpoints
 
 ### `GET /health`
 
-Serverin işlədiyini yoxlayır.
+Checks whether the server is running.
 
 Request:
 
@@ -366,16 +368,16 @@ HTTP/1.1 200 OK
 
 ### `POST /reports`
 
-Yeni report yaradır. Bu endpoint aşağıdakı işləri görür:
+Generates a report. The endpoint performs the following steps:
 
-1. Database-i yoxlayır;
-2. Həmin gün üçün əvvəlki report olub-olmadığını yoxlayır;
-3. Lazım olduqda SQL aggregation edir;
-4. HTML yaradır;
-5. Playwright ilə PDF yaradır;
-6. PDF-i `reports/{id}.pdf` kimi saxlayır;
-7. `reports` cədvəlinə metadata əlavə edir;
-8. JSON response qaytarır.
+1. Initializes the database if necessary;
+2. Checks whether a report already exists for the current day;
+3. Runs the aggregation queries when a new report is required;
+4. Builds the HTML document;
+5. Renders the HTML as a PDF with Playwright;
+6. Stores the PDF as `reports/{id}.pdf`;
+7. Saves report metadata in the `reports` table;
+8. Returns a JSON response containing the file link.
 
 Request:
 
@@ -383,7 +385,7 @@ Request:
 curl -i -X POST http://localhost:8000/reports
 ```
 
-Yeni report üçün response:
+Response for a new report:
 
 ```http
 HTTP/1.1 201 Created
@@ -396,17 +398,17 @@ HTTP/1.1 201 Created
 }
 ```
 
-Bu endpoint qəsdən synchronously işləyir. Yəni PDF yaradılana qədər request bir neçə saniyə gözləyə bilər. Bu assignment üçün həmin davranış tələb olunur.
+The endpoint intentionally performs the complete pipeline inside the request. Therefore, the client may wait a few seconds while the browser renders the PDF. This behavior is allowed and expected for this assignment.
 
 ### `GET /reports`
 
-Yaradılmış bütün report-ların metadata-sını göstərir.
+Returns metadata for all generated reports.
 
 ```bash
 curl -i http://localhost:8000/reports
 ```
 
-Nümunə response:
+Example response:
 
 ```json
 [
@@ -419,17 +421,17 @@ Nümunə response:
 ]
 ```
 
-Bu endpoint assignment-ın optional control panel stretch hissəsi kimi əlavə edilib.
+This endpoint is an optional control-panel stretch feature.
 
 ### `GET /reports/{id}`
 
-Müəyyən report haqqında metadata qaytarır.
+Returns metadata for one report.
 
 ```bash
 curl -i http://localhost:8000/reports/1
 ```
 
-Response:
+Example response:
 
 ```json
 {
@@ -440,7 +442,7 @@ Response:
 }
 ```
 
-Mövcud olmayan report üçün:
+An unknown report ID returns:
 
 ```text
 GET /reports/999999 -> 404 Not Found
@@ -448,34 +450,34 @@ GET /reports/999999 -> 404 Not Found
 
 ### `GET /reports/{id}/file`
 
-PDF faylını diskdən yükləyir.
+Serves the stored PDF from disk.
 
 ```bash
 curl -o my-report.pdf http://localhost:8000/reports/1/file
 ```
 
-Faylın PDF olduğunu yoxlamaq üçün:
+Verify that the downloaded file is a real PDF:
 
 ```bash
 file my-report.pdf
 pdfinfo my-report.pdf
 ```
 
-Bu endpoint üçün response content type:
+The response content type is:
 
 ```text
 application/pdf
 ```
 
-JSON endpoint-lər PDF bytes qaytarmır. PDF yalnız bu file endpoint-i vasitəsilə göndərilir. Bu, assignment-dakı **store and link** prinsipidir.
+The JSON endpoints never include the PDF bytes. Only the file endpoint transfers the PDF. This is the assignment's **store and link** principle.
 
 ## Idempotency
 
-İstifadəçi report yaratmaq düyməsinə iki dəfə basa bilər və ya network problemi səbəbindən eyni request təkrar göndərilə bilər. Sistem hər request-də yeni PDF yaratsaydı, duplicate fayllar və lazımsız browser əməliyyatları yaranardı.
+A user may click the Generate button twice, or a client may retry a request after a network interruption. If every request created a new PDF, duplicate artifacts would be produced unnecessarily.
 
-Bu layihədə `POST /reports` əvvəlcə həmin gün üçün mövcud report-u yoxlayır.
+Before generating a report, `POST /reports` checks whether a report already exists for the current date.
 
-Birinci request:
+First request:
 
 ```bash
 curl -i -X POST http://localhost:8000/reports
@@ -488,7 +490,7 @@ Response:
 id: 1
 ```
 
-İkinci request:
+Second request:
 
 ```bash
 curl -i -X POST http://localhost:8000/reports
@@ -501,9 +503,9 @@ Response:
 id: 1
 ```
 
-İkinci request eyni `id`-ni qaytarır və yeni PDF yaratmır.
+The second request returns the same ID and does not create another PDF.
 
-Əgər qəsdən yeni report yaratmaq lazımdırsa:
+To intentionally create a fresh report, send `force: true`:
 
 ```bash
 curl -i -X POST http://localhost:8000/reports \
@@ -511,49 +513,48 @@ curl -i -X POST http://localhost:8000/reports \
   -d '{"force": true}'
 ```
 
-`force: true` olduqda daily idempotency yoxlaması ötürülür və yeni report yaranır.
+The `force` option skips the same-day reuse check and creates a new report ID.
 
-Bu yoxlama real sistemlərdə double billing, duplicate email və eyni faylın dəfələrlə yaradılması kimi problemlərin qarşısını alır.
+This protects real systems from duplicate billing, duplicate emails, repeated exports, and unnecessary file generation.
 
-## Testlər
+## Tests
 
-Testləri işə salmaq üçün:
+Run the test suite with:
 
 ```bash
 pytest -q
 ```
 
-və ya:
+or:
 
 ```bash
 make test
 ```
 
-Test suite aşağıdakı davranışları yoxlayır:
+The tests cover:
 
-- `GET /health` 200 qaytarır;
-- seed script iki dəfə işlədildikdə 200 order qalır;
-- aggregation real rəqəmlər qaytarır;
-- top 5 məhsul hesablanır;
-- HTML-də print CSS qaydaları mövcuddur;
-- real PDF yaradılır;
-- PDF ən azı valid PDF bytes ilə başlayır;
-- report download olunur;
-- report metadata qaytarılır;
-- unknown report üçün 404 qaytarılır;
-- eyni gün ikinci POST eyni ID-ni qaytarır;
-- `force: true` yeni ID yaradır;
-- `GET /reports` siyahı qaytarır.
+- the health endpoint;
+- safe-to-repeat seeding;
+- real SQL aggregation values;
+- top-five product calculation;
+- print CSS rules;
+- real PDF generation;
+- PDF file download;
+- report metadata;
+- 404 handling for unknown reports;
+- same-day report reuse;
+- forced regeneration;
+- the report listing endpoint.
 
-Yoxlanmış nəticə:
+Verified result:
 
 ```text
 5 passed
 ```
 
-## Manual checkpoint
+## Manual checkpoint evidence
 
-Təmiz local run zamanı alınmış nəticələr:
+A clean local run produced:
 
 ```text
 GET /health                 -> 200 {"status":"ok"}
@@ -566,42 +567,42 @@ Page size                   -> A4
 Git commits                 -> 7 meaningful commits
 ```
 
-Generated PDF-in birinci səhifəsi:
+Generated PDF screenshot:
 
 ![Generated sales report PDF](docs/pdf-page-1.png)
 
-## Nə vaxt background job istifadə edilməlidir?
+## When should this become a background job?
 
-Bu assignment-də report generation request-in içində synchronously işlədilir. Bu, pipeline-ı sadə saxlamaq və request-in bir neçə saniyə gözlədiyini göstərmək üçün qəsdən belə hazırlanıb.
+For this assignment, report generation is intentionally synchronous so the complete pipeline and the visible request delay can be observed.
 
-Production sistemində aşağıdakı hallarda background job-a keçmək daha doğru olar:
+A production system should move generation to a background job when:
 
-- PDF yaratmaq uzun çəkirsə;
-- report çox böyükdürsə;
-- eyni anda çoxlu istifadəçi report yaradırsa;
-- HTTP request timeout riski varsa;
-- istifadəçinin request cavabını gözləməsi lazım deyilsə.
+- PDF rendering becomes slow;
+- reports become much larger;
+- many users generate reports at the same time;
+- HTTP request timeouts become a risk;
+- the client should not wait for the complete rendering process.
 
-Background job variantında `POST /reports` dərhal `202 Accepted` qaytarar, report isə arxa planda yaranar. `GET /reports/{id}` endpoint-i `pending` və ya `done` statusu göstərə bilər. Bu yanaşma istifadəçi üçün daha sürətli olur, lakin queue, retry, status tracking və error handling əlavə mürəkkəblik yaradır.
+In a background-job design, `POST /reports` could immediately return `202 Accepted`. A worker would generate the report in the background, while `GET /reports/{id}` would expose a `pending`, `done`, or `failed` status. This improves the user experience but adds queue management, retries, status tracking, and error handling.
 
-## Assignment tələbləri ilə uyğunluq
+## Assignment requirements checklist
 
-| Assignment tələbi | Layihədəki həll |
+| Assignment requirement | Implementation |
 |---|---|
 | Health endpoint | `GET /health` |
-| SQLite dataset | `orders` table və 200 seeded order |
-| Safe-to-run seed | `seed.py` əvvəlcə order-ları silir |
-| SQL aggregation | `get_report_data()` daxilində dörd query bölməsi |
-| HTML-to-PDF | `build_html()` + Playwright `page.pdf()` |
-| Clean page breaks | `thead` təkrarı və `break-inside: avoid` |
+| SQLite dataset | `orders` table with 200 seeded orders |
+| Safe-to-run seed | `seed.py` clears old orders before inserting |
+| SQL aggregation | Four query sections inside `get_report_data()` |
+| HTML-to-PDF | `build_html()` plus Playwright `page.pdf()` |
+| Clean page breaks | Repeating `thead` and `break-inside: avoid` |
 | Generate report | `POST /reports` |
 | Report metadata | `GET /reports/{id}` |
 | File serving | `GET /reports/{id}/file` |
-| Unknown ID | `404 Not Found` |
-| Idempotency | Eyni gün üçün mövcud report reuse olunur |
-| Force regeneration | `{ "force": true }` |
-| GitHub submission | Public repository və 7 commit |
-| Documentation | Bu README və PDF screenshot |
+| Unknown ID handling | `404 Not Found` |
+| Idempotency | Reuses the current day's report |
+| Forced regeneration | `{ "force": true }` |
+| GitHub submission | Public repository with 7 commits |
+| Documentation | This README and PDF screenshot |
 
 ## GitHub repository
 
@@ -609,4 +610,4 @@ Public repository:
 
 **https://github.com/etikhacker/pdf-report-generator**
 
-Repository-də 7 meaningful commit mövcuddur. Generated `report.db`, PDF-lər və virtual environment Git-ə əlavə edilmir.
+The repository contains the source code, tests, SQL documentation, setup instructions, PDF screenshot, and seven meaningful commits. Generated database files, generated PDFs, and the virtual environment are excluded from Git.
